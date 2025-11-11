@@ -125,13 +125,13 @@ footer {
 .botao-voltar {
   display: inline-block; 
   text-decoration: none; 
-  background-color: rgb(129, 187, 42);
+  background-color: rgb(8, 241, 133);
   color: #000;
   padding: 10px 25px;
   border-radius: 100px; 
   font-weight: bold;
   font-size: 1rem;
-  box-shadow: 0 0 15px rgba(129, 187, 42, 0.6);
+  box-shadow: 0 0 15px rgba(23, 95, 68, 0.6);
   transition: 0.3s;
   animation: flutuar 3s ease-in-out infinite;
   position: relative;
