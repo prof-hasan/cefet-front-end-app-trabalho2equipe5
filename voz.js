@@ -1,11 +1,8 @@
-// ===============================
-// VOZ.GLOBAL.JS
-// ===============================
 const synth = window.speechSynthesis;
 
 /**
  * Fala o texto fornecido em português (pt-BR)
- * @param {string} text - Texto a ser falado
+ * @param {string} text 
  */
 function speak(text) {
   if (!synth) return;
