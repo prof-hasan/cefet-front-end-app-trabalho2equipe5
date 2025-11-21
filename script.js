@@ -109,7 +109,7 @@ function drawPlayer() {
   ctx.fill();
   ctx.restore();
 
-  // Desenha acessórios
+
   drawAccessories(px, py);
 }
 
@@ -175,7 +175,7 @@ function updateItems() {
       addParticle(item.x, item.y);
       if (item.good) {
         score += 10;
-        speak("Bom trabalho!");
+        speak("Continue limpando o planeta!");
       } else {
         lives--;
         speak("Cuidado! Poluente detectado.");
@@ -374,36 +374,24 @@ window.addEventListener("beforeunload", saveGameStorage);
 initGame();
 
 
-
-
-
-
-// ==========================
-// SISTEMA DE ACESSÓRIOS
-// ==========================
-
-// Estado dos acessórios
 let skin = {
-  glasses: false,
-  hair: false,
-  hat: false,
-  aura: false,
+  ÓCULOS: false,
+  CABELO: false,
+  CHAPÉU: false,
+  COR: false,
   color: "#00ff99"
 };
 
-// Alterna um acessório
 function tryToggle(type) {
   skin[type] = !skin[type];
   document.getElementById("unlockInfo").textContent =
     skin[type] ? `${type} ativado!` : `${type} desativado!`;
 }
 
-// Muda a cor do acessório ativo
 function changeAccessoryColor(c) {
   skin.color = c;
 }
 
-// DESENHAR ACESSÓRIOS NA BOLINHA
 function drawAccessories(px, py) {
   if (!ctx) return;
 
@@ -412,8 +400,7 @@ function drawAccessories(px, py) {
   ctx.fillStyle = skin.color;
   ctx.lineWidth = 3;
 
-  // ÓCULOS
-  if (skin.glasses) {
+  if (skin.ÓCULOS) {
     ctx.beginPath();
     ctx.arc(px - 10, py - 5, 6, 0, Math.PI * 2);
     ctx.arc(px + 10, py - 5, 6, 0, Math.PI * 2);
@@ -422,21 +409,18 @@ function drawAccessories(px, py) {
     ctx.stroke();
   }
 
-  // CABELO
-  if (skin.hair) {
+  if (skin.CABELO) {
     ctx.beginPath();
     ctx.arc(px, py - 20, 18, Math.PI, Math.PI * 2);
     ctx.stroke();
   }
 
-  // CHAPÉU
-  if (skin.hat) {
+  if (skin.CHAPÉU) {
     ctx.fillRect(px - 18, py - 32, 36, 6);
     ctx.fillRect(px - 10, py - 48, 20, 18);
   }
 
-  // AURA
-  if (skin.aura) {
+  if (skin.COR) {
     ctx.beginPath();
     ctx.strokeStyle = skin.color + "88";
     ctx.lineWidth = 4;
