@@ -1,9 +1,10 @@
 const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+const ctx = canvas?.getContext ? canvas.getContext("2d") : null;
 
 const startBtn = document.getElementById("startBtn");
 const resetBtn = document.getElementById("resetBtn");
-const modal = document.getElementById("modalSobre");
+
+const modalSobre = document.getElementById("modalSobre");
 const sobreBtn = document.getElementById("sobreBtn");
 const closeModal = document.getElementById("closeModal");
 
@@ -24,22 +25,48 @@ const closeRanking = document.getElementById("closeRanking");
 
 const synth = window.speechSynthesis;
 
-let player, items, particles, score, level, lives, speed, running = false;
+let player, items, particles;
+let score = 0, level = 1, lives = 3, speed = 2, running = false;
 let spawnCounter = 0;
+
+function warnIfMissing(id, el) {
+  if (!el) console.warn(`Elemento ausente no HTML: #${id}`);
+}
+
+warnIfMissing("gameCanvas", canvas);
+warnIfMissing("startBtn", startBtn);
+warnIfMissing("resetBtn", resetBtn);
+warnIfMissing("modalSobre", modalSobre);
+warnIfMissing("sobreBtn", sobreBtn);
+warnIfMissing("closeModal", closeModal);
+warnIfMissing("score", scoreSpan);
+warnIfMissing("level", levelSpan);
+warnIfMissing("lives", livesSpan);
+warnIfMissing("modalGameOver", modalGameOver);
+warnIfMissing("finalScore", finalScoreEl);
+warnIfMissing("playerName", playerNameInput);
+warnIfMissing("saveScoreBtn", saveScoreBtn);
+warnIfMissing("modalRanking", modalRanking);
+warnIfMissing("rankingList", rankingList);
+warnIfMissing("openRanking", openRanking);
+warnIfMissing("closeRanking", closeRanking);
 
 function speak(text) {
   if (!synth) return;
-  if (!synth.speaking) {
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = "pt-BR";
-    synth.speak(utter);
-  }
+  if (synth.speaking) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "pt-BR";
+  synth.speak(u);
 }
 
 function saveGameStorage() {
-  localStorage.setItem("eco_score", score);
-  localStorage.setItem("eco_level", level);
-  localStorage.setItem("eco_lives", lives);
+  try {
+    localStorage.setItem("eco_score", score);
+    localStorage.setItem("eco_level", level);
+    localStorage.setItem("eco_lives", lives);
+  } catch (e) {
+    console.warn("Erro ao salvar em localStorage:", e);
+  }
 }
 
 function loadGameStorageDefaults() {
@@ -48,7 +75,9 @@ function loadGameStorageDefaults() {
   lives = parseInt(localStorage.getItem("eco_lives")) || 3;
 }
 
+
 function initGame() {
+  if (!canvas) return;
   player = { x: Math.floor((canvas.width - 40) / 2), y: canvas.height - 70, size: 40 };
   items = [];
   particles = [];
@@ -59,23 +88,34 @@ function initGame() {
 }
 
 function updateHUD() {
-  scoreSpan.textContent = score;
-  levelSpan.textContent = level;
-  livesSpan.textContent = lives;
+  if (scoreSpan) scoreSpan.textContent = score;
+  if (levelSpan) levelSpan.textContent = level;
+  if (livesSpan) livesSpan.textContent = lives;
 }
 
+
 function drawPlayer() {
+  if (!ctx || !player) return;
+
+  const px = player.x + 20;
+  const py = player.y + 20;
+
   ctx.save();
   ctx.shadowBlur = 20;
   ctx.shadowColor = "#00ff9d";
   ctx.fillStyle = "#00ff9d";
   ctx.beginPath();
-  ctx.arc(player.x + 20, player.y + 20, 20, 0, Math.PI * 2);
+  ctx.arc(px, py, 20, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
+
+  // Desenha acessórios
+  drawAccessories(px, py);
 }
 
+
 function drawItems() {
+  if (!ctx) return;
   items.forEach(item => {
     ctx.save();
     ctx.fillStyle = item.good ? "#00e5ff" : "#ff1744";
@@ -87,6 +127,7 @@ function drawItems() {
 }
 
 function drawParticles() {
+  if (!ctx) return;
   particles.forEach(p => {
     ctx.fillStyle = `rgba(0,255,150,${p.alpha})`;
     ctx.fillRect(p.x, p.y, 3, 3);
@@ -103,10 +144,12 @@ function addParticle(x, y) {
     });
   }
 }
+
 function updateParticles() {
   particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.alpha -= 0.03; });
   particles = particles.filter(p => p.alpha > 0);
 }
+
 
 function spawnItem() {
   spawnCounter++;
@@ -151,30 +194,12 @@ function updateItems() {
     localStorage.setItem("eco_level", level);
   }
 
-  if (lives <= 0) {
-    endGame();
-  }
-}
-
-function gameLoop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  drawBackground();
-
-  drawPlayer();
-  drawItems();
-  drawParticles();
-
-  spawnItem();
-  updateItems();
-  updateParticles();
-
-  if (running) requestAnimationFrame(gameLoop);
+  if (lives <= 0) endGame();
 }
 
 
 function drawBackground(){
- 
+  if (!ctx) return;
   ctx.save();
   for (let i = 0; i < 20; i++) {
     ctx.fillStyle = "rgba(200,255,220,0.02)";
@@ -187,88 +212,141 @@ function drawBackground(){
   ctx.restore();
 }
 
+function gameLoop() {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBackground();
+  drawPlayer();
+  drawItems();
+  drawParticles();
+  spawnItem();
+  updateItems();
+  updateParticles();
+  if (running) requestAnimationFrame(gameLoop);
+}
+
+
 document.addEventListener("keydown", e => {
-  if (!running) return;
+  if (!running || !player) return;
   if (e.key === "ArrowLeft") player.x = Math.max(0, player.x - 30);
   if (e.key === "ArrowRight") player.x = Math.min(canvas.width - player.size, player.x + 30);
 });
 
-canvas.addEventListener("mousemove", e => {
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  player.x = Math.min(Math.max(0, x - player.size / 2), canvas.width - player.size);
-});
-canvas.addEventListener("touchmove", e => {
-  const rect = canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-  const x = touch.clientX - rect.left;
-  player.x = Math.min(Math.max(0, x - player.size / 2), canvas.width - player.size);
-});
+if (canvas) {
+  canvas.addEventListener("mousemove", e => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    player.x = Math.min(Math.max(0, x - player.size / 2), canvas.width - player.size);
+  });
+  canvas.addEventListener("touchmove", e => {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    player.x = Math.min(Math.max(0, x - player.size / 2), canvas.width - player.size);
+  });
+}
 
-startBtn.addEventListener("click", () => {
-  initGame();
-  running = true;
-  speak("Iniciando missão de limpeza planetária.");
-  gameLoop();
-});
 
-resetBtn.addEventListener("click", () => {
-  localStorage.removeItem("eco_score");
-  localStorage.removeItem("eco_level");
-  localStorage.removeItem("eco_lives");
-  initGame();
-  updateHUD();
-  speak("Progresso apagado. Reiniciando missão.");
-});
+if (startBtn) {
+  startBtn.addEventListener("click", () => {
+    initGame();
+    running = true;
+    speak("Iniciando missão de limpeza planetária.");
+    gameLoop();
+  });
+} else console.warn("#startBtn não encontrado");
 
-sobreBtn.addEventListener("click", () => { modal.style.display = "flex"; });
-closeModal.addEventListener("click", () => { modal.style.display = "none"; });
+if (resetBtn) {
+  resetBtn.addEventListener("click", () => {
+    localStorage.removeItem("eco_score");
+    localStorage.removeItem("eco_level");
+    localStorage.removeItem("eco_lives");
+    initGame();
+    updateHUD();
+    speak("Progresso apagado. Reiniciando missão.");
+  });
+} else console.warn("#resetBtn não encontrado");
 
-initGame();
+
+if (sobreBtn && modalSobre) {
+  sobreBtn.addEventListener("click", () => modalSobre.style.display = "flex");
+} else if (modalSobre && !sobreBtn) {
+  console.info("Modal 'Sobre' presente mas sem botão de abertura (#sobreBtn).");
+}
+if (closeModal && modalSobre) {
+  closeModal.addEventListener("click", () => modalSobre.style.display = "none");
+}
 
 function endGame() {
   running = false;
   speak("Jogo encerrado. O planeta precisa de você!");
-  finalScoreEl.textContent = score;
-  showModal(modalGameOver);
+  if (finalScoreEl) finalScoreEl.textContent = score;
+  if (modalGameOver) showModal(modalGameOver);
+}
+
+if (closeGameOver) {
+  closeGameOver.addEventListener("click", () => {
+    if (modalGameOver) modalGameOver.style.display = "none";
+    initGame();
+    updateHUD();
+  });
 }
 
 function loadRanking() {
-  const raw = localStorage.getItem("eco_ranking");
-  return raw ? JSON.parse(raw) : [];
+  try {
+    return JSON.parse(localStorage.getItem("eco_ranking") || "[]");
+  } catch (e) {
+    console.warn("Formato inválido em eco_ranking; resetando.", e);
+    localStorage.removeItem("eco_ranking");
+    return [];
+  }
 }
 function saveRanking(rank) {
-  localStorage.setItem("eco_ranking", JSON.stringify(rank));
+  try {
+    localStorage.setItem("eco_ranking", JSON.stringify(rank));
+  } catch (e) {
+    console.warn("Erro ao salvar ranking:", e);
+  }
 }
 
-saveScoreBtn.addEventListener("click", () => {
-  const name = (playerNameInput.value || "Anônimo").trim();
-  const rank = loadRanking();
-  rank.push({ name, score: score, date: new Date().toISOString() });
-  rank.sort((a,b) => b.score - a.score);
-  const top = rank.slice(0,5);
-  saveRanking(top);
-  playerNameInput.value = "";
-  closeModalGameOver();
-  openRankingModal();
-});
-
-closeGameOver.addEventListener("click", () => { closeModalGameOver(); });
-
-function closeModalGameOver(){
-  modalGameOver.style.display = "none";
-  initGame();
-  updateHUD();
+if (saveScoreBtn && playerNameInput) {
+  saveScoreBtn.addEventListener("click", () => {
+    const name = (playerNameInput.value || "Anônimo").trim();
+    if (!name) {
+      alert("Digite um nome para salvar no ranking.");
+      return;
+    }
+    const rank = loadRanking();
+    rank.push({ name, score });
+    rank.sort((a,b) => b.score - a.score);
+    saveRanking(rank.slice(0, 10));
+    playerNameInput.value = "";
+    if (modalGameOver) modalGameOver.style.display = "none";
+    if (openRanking) openRankingModal();
+  });
+} else {
+  if (!saveScoreBtn) console.warn("#saveScoreBtn ausente");
+  if (!playerNameInput) console.warn("#playerName ausente");
 }
 
-openRanking.addEventListener("click", openRankingModal);
-closeRanking.addEventListener("click", () => { modalRanking.style.display = "none"; });
+if (openRanking && modalRanking && rankingList) {
+  openRanking.addEventListener("click", openRankingModal);
+} else {
+  if (!openRanking) console.warn("#openRanking ausente");
+  if (!modalRanking) console.warn("#modalRanking ausente");
+  if (!rankingList) console.warn("#rankingList ausente");
+}
+if (closeRanking && modalRanking) {
+  closeRanking.addEventListener("click", () => modalRanking.style.display = "none");
+}
 
-function openRankingModal(){
+function openRankingModal() {
+  if (!rankingList || !modalRanking) return;
   const rank = loadRanking();
   rankingList.innerHTML = "";
-  if (rank.length === 0) rankingList.innerHTML = "<li>Nenhum registro ainda</li>";
-  else {
+  if (rank.length === 0) {
+    rankingList.innerHTML = "<li>Nenhum registro ainda</li>";
+  } else {
     rank.forEach(r => {
       const li = document.createElement("li");
       li.textContent = `${r.name} — ${r.score} pts`;
@@ -278,17 +356,93 @@ function openRankingModal(){
   showModal(modalRanking);
 }
 
-function showModal(m){
+function showModal(m) {
+  if (!m) return;
   m.style.display = "flex";
-  const input = m.querySelector("input, button");
-  if (input) input.focus();
 }
+
 document.addEventListener("click", e => {
-  [modal, modalGameOver, modalRanking].forEach(m => {
-    if (m.style.display === "flex" && e.target === m) m.style.display = "none";
+  [modalSobre, modalRanking, modalGameOver].forEach(mod => {
+    if (mod && mod.style.display === "flex" && e.target === mod) {
+      mod.style.display = "none";
+    }
   });
 });
 
-window.addEventListener("beforeunload", () => {
-  saveGameStorage();
-});
+window.addEventListener("beforeunload", saveGameStorage);
+
+initGame();
+
+
+
+
+
+
+// ==========================
+// SISTEMA DE ACESSÓRIOS
+// ==========================
+
+// Estado dos acessórios
+let skin = {
+  glasses: false,
+  hair: false,
+  hat: false,
+  aura: false,
+  color: "#00ff99"
+};
+
+// Alterna um acessório
+function tryToggle(type) {
+  skin[type] = !skin[type];
+  document.getElementById("unlockInfo").textContent =
+    skin[type] ? `${type} ativado!` : `${type} desativado!`;
+}
+
+// Muda a cor do acessório ativo
+function changeAccessoryColor(c) {
+  skin.color = c;
+}
+
+// DESENHAR ACESSÓRIOS NA BOLINHA
+function drawAccessories(px, py) {
+  if (!ctx) return;
+
+  ctx.save();
+  ctx.strokeStyle = skin.color;
+  ctx.fillStyle = skin.color;
+  ctx.lineWidth = 3;
+
+  // ÓCULOS
+  if (skin.glasses) {
+    ctx.beginPath();
+    ctx.arc(px - 10, py - 5, 6, 0, Math.PI * 2);
+    ctx.arc(px + 10, py - 5, 6, 0, Math.PI * 2);
+    ctx.moveTo(px - 4, py - 5);
+    ctx.lineTo(px + 4, py - 5);
+    ctx.stroke();
+  }
+
+  // CABELO
+  if (skin.hair) {
+    ctx.beginPath();
+    ctx.arc(px, py - 20, 18, Math.PI, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // CHAPÉU
+  if (skin.hat) {
+    ctx.fillRect(px - 18, py - 32, 36, 6);
+    ctx.fillRect(px - 10, py - 48, 20, 18);
+  }
+
+  // AURA
+  if (skin.aura) {
+    ctx.beginPath();
+    ctx.strokeStyle = skin.color + "88";
+    ctx.lineWidth = 4;
+    ctx.arc(px, py, 30, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}

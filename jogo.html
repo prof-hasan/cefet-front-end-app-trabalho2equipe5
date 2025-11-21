@@ -18,18 +18,41 @@
 
   <main>
     <a href="index.html" class="botao-voltar">Voltar</a>
+
     <div id="hud" aria-live="polite" aria-atomic="true">
       <div>Pontuação: <span id="score">0</span></div>
       <div>Nível: <span id="level">1</span></div>
       <div>Vidas: <span id="lives">3</span></div>
     </div>
 
-    <canvas id="gameCanvas" width="800" height="480" aria-label="Área do jogo"></canvas>
+    <div id="customizer">
+<h2>Personalizar Jogador</h2>
+<div class="buttons">
+<button type="button" onclick="tryToggle('glasses')">👓 Óculos</button>
+<button type="button" onclick="tryToggle('hair')">💇 Cabelo</button>
+<button type="button" onclick="tryToggle('hat')">🎩 Chapéu</button>
+<button type="button" onclick="tryToggle('aura')">✨ Aura</button>
+</div>
 
-    <div class="controles" role="group" aria-label="Controles do jogo">
-      <button id="startBtn" aria-label="Iniciar jogo">▶️ Iniciar</button>
-      <button id="resetBtn" aria-label="Resetar progresso">♻️ Resetar</button>
-    </div>
+
+<div id="colors">
+<label for="accessoryColor">Cor do acessório:</label>
+<input type="color" id="accessoryColor" value="#00ff99" onchange="changeAccessoryColor(this.value)">
+</div>
+
+
+<div id="unlockInfo" aria-live="polite" style="margin-top:8px;font-size:0.9rem;color:#333"></div>
+</div>
+
+
+<canvas id="gameCanvas" width="800" height="480" aria-label="Área do jogo"></canvas>
+
+
+<div class="controles" role="group" aria-label="Controles do jogo">
+<button id="startBtn" aria-label="Iniciar jogo">▶️ Iniciar</button>
+<button id="resetBtn" aria-label="Resetar progresso">♻️ Resetar</button>
+<button id="openRanking" style="margin-left:12px;">🏆 Ranking</button>
+</div>
   </main>
 
   <div id="modalSobre" class="modal" role="dialog" aria-modal="true" aria-label="Informações sobre o jogo">
@@ -65,7 +88,7 @@
 
   <footer>
     <p>2025 ECO SIS - Todos os direitos reservados & respeitados</p>
-    <button id="openRanking" style="margin-left:12px;">🏆 Ranking</button>
+ 
   </footer>
 
   <script src="script.js"></script>
