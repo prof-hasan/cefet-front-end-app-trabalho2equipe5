@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ECO ambiente – Guardião da Terra 🌍</title>
+
+  <link rel="shortcut icon" href="natureza.webp">
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>🐞 ECO sistema – Guardião da Terra</h1>
+    <p>Pegue as plantas e salve o planeta antes que o tempo acabe.</p>
+  </header>
+
+  <main>
+    <a href="index.html" class="botao-voltar">Voltar</a>
+
+    <div id="hud">
+      <div>Pontuação: <span id="score">0</span></div>
+      <div>Nível: <span id="level">1</span></div>
+      <div>Vidas: <span id="lives">3</span></div>
+    </div>
+
+    <div id="customizer">
+      <h2>Personalizar Jogador</h2>
+      <div class="buttons">
+        <button onclick="tryToggle('ÓCULOS')">👓 Óculos</button>
+        <button onclick="tryToggle('CHAPÉU')">🎩 Chapéu</button>
+        <button onclick="tryToggle('COR')">Aura</button>
+      </div>
+
+      <div id="colors">
+        <label for="accessoryColor">Cor do acessório:</label>
+        <input type="color" id="accessoryColor" value="#00ff99" onchange="changeAccessoryColor(this.value)">
+      </div>
+
+      <div id="unlockInfo"></div>
+    </div>
+
+    <canvas id="gameCanvas" width="800" height="480"></canvas>
+
+    <div class="controles">
+      <button id="startBtn">▶️ Iniciar</button>
+      <button id="resetBtn">♻️ Resetar</button>
+      <button id="openRanking">🏆 Ranking</button>
+    </div>
+  </main>
+
+  <div id="modalSobre" class="modal">
+    <div class="modal-content">
+      <h2>Sobre o jogo</h2>
+      <p><strong>ECO HERO</strong> é um jogo educativo...</p>
+      <p><strong>Desenvolvido por:</strong> Rafaella Web Sustentável 🌱</p>
+      <button id="closeModal">Fechar</button>
+    </div>
+  </div>
+
+  <div id="modalGameOver" class="modal">
+    <div class="modal-content">
+      <h2>Missão encerrada</h2>
+      <p>Sua pontuação: <strong id="finalScore">0</strong></p>
+      <label for="playerName">Digite seu nome:</label>
+      <input id="playerName" maxlength="20" placeholder="Seu nome" />
+      <div>
+        <button id="saveScoreBtn">Salvar no ranking</button>
+        <button id="closeGameOver">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalRanking" class="modal">
+    <div class="modal-content">
+      <h2>Ranking Local</h2>
+      <ol id="rankingList"></ol>
+      <button id="closeRanking">Fechar</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>2025 ECO SIS - Todos os direitos reservados</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
