@@ -1,5 +1,6 @@
 const synth = window.speechSynthesis;
 
+
 /**
  * Fala o texto fornecido em português (pt-BR)
  * @param {string} text 
